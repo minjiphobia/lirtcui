@@ -178,6 +178,7 @@ class _MyAppState extends State<MyApp> {
         };
 
         _peerConnection.onTrack = (event) {
+            print('---new track---');
             if (event.track.kind == 'video') {
                 setState(() {_remoteRenderer.srcObject = event.streams[0];});
             }
@@ -203,6 +204,7 @@ class _MyAppState extends State<MyApp> {
                 await _peerConnection.setRemoteDescription(description);
 
                 _peerConnection.onRenegotiationNeeded = () async {
+                    print('---parsing negotiation---');
                     RTCSessionDescription offer = await _peerConnection.createOffer({});
                     await _peerConnection.setLocalDescription(offer);
 
@@ -222,7 +224,7 @@ class _MyAppState extends State<MyApp> {
                         final data = jsonDecode(message);
 
                         if (data['id'] == _id) {
-                            print('---parsing answer---');
+                            print('---parsing answer for renegotiation---');
                             print(data);
                             RTCSessionDescription description = RTCSessionDescription(
                                 data['result']['sdp'],
@@ -328,5 +330,8 @@ class _MyAppState extends State<MyApp> {
         super.dispose();
         // Close WebSocket connection
         _channel.sink.close();
+        _localStream.dispose();
+        _localRenderer.dispose();
+        _remoteRenderer.dispose();
     }
 }
